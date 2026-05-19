@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # === ПЕРЕМЕННЫЕ ===
-SRC_DIR="/var/www/portfolio.net/imgs_1"
-IN_DIR="/var/www/portfolio.net/foto_in"
-OUT_DIR="/var/www/portfolio.net/foto_www"
-ARCH_DIR="/var/www/portfolio.net/arhiv/foto"
-BASE_DIR="/var/www/portfolio.net"
-LOG_FILE="/var/www/portfolio.net/process.log"
+SRC_DIR="/var/www/portfolio/imgs_1"
+IN_DIR="/var/www/portfolio/foto_in"
+OUT_DIR="/var/www/portfolio/foto_www"
+ARCH_DIR="/var/www/portfolio/arhiv/foto"
+BASE_DIR="/var/www/portfolio"
+LOG_FILE="/var/www/portfolio/process.log"
 
 
 # === ОЧИСТКА ФАЙЛА ЛОГОВ ===

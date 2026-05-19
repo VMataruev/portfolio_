@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # === ПЕРЕМЕННЫЕ ===
-SRC_DIR="/var/www/portfolio.net/files_doc_source"
-IN_DIR="/var/www/portfolio.net/files_doc_in"
-OUT_DIR="/var/www/portfolio.net/files_pdf_out"
-ARCH_DIR="/var/www/portfolio.net/arhiv/files_doc_out"
-BASE_DIR="/var/www/portfolio.net"
-LOG_FILE="/var/www/portfolio.net/process_doc.log"
+SRC_DIR="/var/www/portfolio/files_doc_source"
+IN_DIR="/var/www/portfolio/files_doc_in"
+OUT_DIR="/var/www/portfolio/files_pdf_out"
+ARCH_DIR="/var/www/portfolio/arhiv/files_doc_out"
+BASE_DIR="/var/www/portfoliot"
+LOG_FILE="/var/www/portfolio/process_doc.log"
 
 # === ОЧИСТКА ЛОГА ===
 echo "==== DOC TO PDF CONVERSION LOG ====" > "$LOG_FILE"

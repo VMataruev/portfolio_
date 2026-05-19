@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # === ПЕРЕМЕННЫЕ ===
-SRC_DIR="/var/www/portfolio.net/video_source"
-IN_DIR="/var/www/portfolio.net/video_in"
-OUT_DIR="/var/www/portfolio.net/video"
-ARCH_DIR="/var/www/portfolio.net/arhiv/video"
-BASE_DIR="/var/www/portfolio.net"
-LOG_FILE="/var/www/portfolio.net/process_video.log"
+SRC_DIR="/var/www/portfolio/video_source"
+IN_DIR="/var/www/portfolio/video_in"
+OUT_DIR="/var/www/portfolio/video"
+ARCH_DIR="/var/www/portfolio/arhiv/video"
+BASE_DIR="/var/www/portfolio"
+LOG_FILE="/var/www/portfolio/process_video.log"
 
 # === ОЧИСТКА ФАЙЛА ЛОГОВ ===
 echo "=== LOG VIDEO PROCESSING ===" > "$LOG_FILE"

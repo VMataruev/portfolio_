@@ -5,7 +5,7 @@ SRC_DIR="/var/www/portfolio/files_doc_source"
 IN_DIR="/var/www/portfolio/files_doc_in"
 OUT_DIR="/var/www/portfolio/files_pdf_out"
 ARCH_DIR="/var/www/portfolio/arhiv/files_doc_out"
-BASE_DIR="/var/www/portfoliot"
+BASE_DIR="/var/www/portfolio"
 LOG_FILE="/var/www/portfolio/process_doc.log"
 
 # === ОЧИСТКА ЛОГА ===

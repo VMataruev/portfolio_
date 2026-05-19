@@ -104,7 +104,7 @@ echo "ZIP archive created: $ZIP_NAME" >> "$LOG_FILE"
 # СОЗДАНИЕ HTML СТРАНИЦЫ
 # ==========================================
 
-cat > "$BASE_DIR/documents.html" << 'EOF'
+cat > "$BASE_DIR/word_original.html" << 'EOF'
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -195,7 +195,7 @@ for doc in "$IN_DIR"/*; do
 
     pdf_name="${filename%.*}.pdf"
 
-cat >> "$BASE_DIR/documents.html" << EOF
+cat >> "$BASE_DIR/word_original.html" << EOF
 
 <div class="card">
 
@@ -222,7 +222,7 @@ EOF
 done
 
 # === ЗАКРЫТИЕ HTML ===
-cat >> "$BASE_DIR/documents.html" << 'EOF'
+cat >> "$BASE_DIR/word_original.html" << 'EOF'
 
 </div>
 
@@ -243,7 +243,7 @@ echo "DONE!"
 echo "=================================="
 
 echo "Website:"
-echo "http://$(hostname -I | awk '{print $1}')/documents.html"
+echo "http://$(hostname -I | awk '{print $1}')/word_original.html"
 
 echo ""
 echo "PDF files:"

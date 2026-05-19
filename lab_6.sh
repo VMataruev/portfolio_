@@ -1,0 +1,168 @@
+#!/bin/bash
+
+# === ПЕРЕМЕННЫЕ ===
+SRC_DIR="/var/www/portfolio.net/imgs_1"
+IN_DIR="/var/www/portfolio.net/foto_in"
+OUT_DIR="/var/www/portfolio.net/foto_www"
+ARCH_DIR="/var/www/portfolio.net/arhiv/foto"
+BASE_DIR="/var/www/portfolio.net"
+LOG_FILE="/var/www/portfolio.net/process.log"
+
+
+# === ОЧИСТКА ФАЙЛА ЛОГОВ ===
+echo "=== ЛОГ ОБРАБОТКИ ===" > "$LOG_FILE"
+echo "Дата: $(date)" >> "$LOG_FILE"
+echo "" >> "$LOG_FILE"
+
+# === СОЗДАНИЕ КАТАЛОГОВ ===
+echo "Создание каталогов..."
+sudo mkdir -p $IN_DIR
+sudo mkdir -p $OUT_DIR
+sudo mkdir -p $ARCH_DIR
+
+# === УСТАНОВКА ПРОГРАММ ===
+echo "Установка ImageMagick и архиваторов..."
+sudo apt update
+sudo apt install -y imagemagick zip bzip2
+
+# === КОПИРОВАНИЕ JPG ===
+echo "Копирование файлов..."
+sudo cp $SRC_DIR/*.jpg $IN_DIR
+
+# === ОБРАБОТКА ИЗОБРАЖЕНИЙ ===
+echo "Обработка изображений..."
+
+for img in $IN_DIR/*.jpg; do
+    filename=$(basename "$img")
+    output="$OUT_DIR/$filename"
+
+    # размер ДО
+    size_before=$(stat -c%s "$img")
+
+    # обработка
+    convert "$img" -resize 800x600 -quality 85 \
+    -gravity South -pointsize 20 -annotate +0+10 "foto_processed" \
+    "$output"
+
+    # размер ПОСЛЕ
+    size_after=$(stat -c%s "$output")
+
+    # расчёт сжатия
+    diff=$((size_before - size_after))
+    percent=$(awk "BEGIN {printf \"%.2f\", ($diff/$size_before)*100}")
+
+    # запись в лог
+    echo "Файл: $filename" >> "$LOG_FILE"
+    echo "Исходный размер: $size_before байт" >> "$LOG_FILE"
+    echo "Новый размер: $size_after байт" >> "$LOG_FILE"
+    echo "Сжатие: $percent %" >> "$LOG_FILE"
+    echo "Сохранён: $output" >> "$LOG_FILE"
+    echo "-----------------------------" >> "$LOG_FILE"
+done
+
+# === АРХИВАЦИЯ ===
+echo "Архивация..."
+
+# zip
+zip -j $ARCH_DIR/images.zip $IN_DIR/*.jpg
+
+# === СОЗДАНИЕ HTML СТРАНИЦ ===
+echo "Создание веб-страниц..."
+
+# исходные
+cat <<EOF | sudo tee $BASE_DIR/foto_original.html
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портфолио - Исходные изображения</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="hero-bg">
+        <div class="stars"></div>
+    </div>
+
+    <header>
+        <div class="a_box">
+            <a href="../index.html">Обо мне</a>
+            <div class="a_box_line"></div>
+        </div>
+        <div class="a_box">
+            <a href="../projects/projects.html">Проекты</a>
+            <div class="a_box_line"></div>
+        </div>
+        <div class="a_box">
+            <a href="">Контакты</a>
+            <div class="a_box_line"></div>
+        </div>
+
+        <div class="a_box">
+            <a href="./foto_original.html">Оригиналы</a>
+            <div class="a_box_line"></div>
+        </div>
+
+        <div class="a_box">
+            <a href="./foto_processed.html">Обработанные</a>
+            <div class="a_box_line"></div>
+        </div>
+    </header>
+EOF
+
+for img in $IN_DIR/*.jpg; do
+    file=$(basename "$img")
+    echo "<img src='foto_in/$file' width='200'>" | sudo tee -a $BASE_DIR/foto_original.html
+done
+
+echo "</body><script src="./stars.js"></script></html>" | sudo tee -a $BASE_DIR/foto_original.html
+
+# обработанные
+cat <<EOF | sudo tee $BASE_DIR/foto_processed.html
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портфолио - Обработанные изображения</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="hero-bg">
+        <div class="stars"></div>
+    </div>
+
+    <header>
+        <div class="a_box">
+            <a href="../index.html">Обо мне</a>
+            <div class="a_box_line"></div>
+        </div>
+        <div class="a_box">
+            <a href="../projects/projects.html">Проекты</a>
+            <div class="a_box_line"></div>
+        </div>
+        <div class="a_box">
+            <a href="">Контакты</a>
+            <div class="a_box_line"></div>
+        </div>
+
+        <div class="a_box">
+            <a href="./foto_original.html">Оригиналы</a>
+            <div class="a_box_line"></div>
+        </div>
+
+        <div class="a_box">
+            <a href="./foto_processed.html">Обработанные</a>
+            <div class="a_box_line"></div>
+        </div>
+    </header>
+EOF
+
+for img in $OUT_DIR/*.jpg; do
+    file=$(basename "$img")
+    echo "<img src='foto_www/$file' width='200'>" | sudo tee -a $BASE_DIR/foto_processed.html
+done
+
+echo "</body><script src="./stars.js"></script></html>" | sudo tee -a $BASE_DIR/foto_processed.html
+
+echo "Готово!"

@@ -55,7 +55,6 @@ echo "Copying files..."
 find "$SRC_DIR" -type f \( -iname "*.doc" -o -iname "*.docx" \) | while read file
 do
     sudo cp "$file" "$IN_DIR/"
-    
     echo "Copied: $(basename "$file")" >> "$LOG_FILE"
 done
 
@@ -63,21 +62,16 @@ done
 echo "Converting documents to PDF..."
 
 for doc in "$IN_DIR"/*; do
-
     [ -f "$doc" ] || continue
-
     filename=$(basename "$doc")
-
     echo "Processing: $filename" >> "$LOG_FILE"
-
-    # Конвертация через LibreOffice
+    
     libreoffice --headless \
         --convert-to pdf \
         --outdir "$OUT_DIR" \
         "$doc"
-
+    
     echo "Converted: $filename" >> "$LOG_FILE"
-
 done
 
 # === АРХИВАЦИЯ ИСХОДНЫХ ФАЙЛОВ ===
@@ -101,7 +95,7 @@ sudo zip -r \
 echo "ZIP archive created: $ZIP_NAME" >> "$LOG_FILE"
 
 # ==========================================
-# СОЗДАНИЕ HTML СТРАНИЦЫ
+# СОЗДАНИЕ HTML СТРАНИЦЫ (с просмотром PDF)
 # ==========================================
 
 cat > "$BASE_DIR/word_original.html" << 'EOF'
@@ -110,130 +104,208 @@ cat > "$BASE_DIR/word_original.html" << 'EOF'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOC -> PDF Reports</title>
-
+    <title>Портфолио - Документы DOC и PDF</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="main.css">
     <style>
-
-        body {
-            background: #111827;
-            color: white;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 30px;
+        .doc-section {
+            margin: 120px 40px 40px 40px;
         }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 40px;
-            color: #60a5fa;
+        .doc-title {
+            color: var(--brand-main);
+            font-size: 28px;
+            margin-bottom: 30px;
+            padding-left: 20px;
+            border-left: 4px solid var(--brand-main);
         }
-
-        .container {
+        .doc-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
         }
-
-        .card {
-            background: #1f2937;
-            border-radius: 12px;
+        .doc-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
             padding: 20px;
-            transition: 0.3s;
+            transition: transform 0.3s ease;
         }
-
-        .card:hover {
+        .doc-card:hover {
             transform: translateY(-5px);
-            background: #374151;
+            background: rgba(255,255,255,0.1);
         }
-
-        h3 {
-            color: #93c5fd;
+        .pdf-viewer {
+            width: 100%;
+            height: 400px;
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: #1f2937;
+        }
+        .doc-card h3 {
+            color: var(--brand-main);
+            margin-bottom: 10px;
+            font-size: 14px;
             word-break: break-all;
         }
-
-        a {
+        .doc-card p {
+            color: var(--text-gray);
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .btn {
             display: inline-block;
-            margin-top: 10px;
-            text-decoration: none;
-            color: white;
-            background: #2563eb;
-            padding: 10px 15px;
+            padding: 8px 16px;
             border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
         }
-
-        a:hover {
+        .btn-download {
+            background: #2563eb;
+            color: white;
+        }
+        .btn-download:hover {
             background: #1d4ed8;
+            transform: translateY(-2px);
         }
-
-        .pdf-btn {
+        .btn-pdf {
             background: #dc2626;
+            color: white;
         }
-
-        .pdf-btn:hover {
+        .btn-pdf:hover {
             background: #b91c1c;
+            transform: translateY(-2px);
         }
-
+        .btn-fullscreen {
+            background: #10b981;
+            color: white;
+        }
+        .btn-fullscreen:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+        .badge-doc {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: rgba(37,99,235,0.3);
+            color: #60a5fa;
+            margin-top: 10px;
+        }
     </style>
 </head>
-
 <body>
+    <div class="hero-bg">
+        <div class="stars"></div>
+    </div>
 
-<h1>Документы DOC/DOCX и PDF</h1>
+    <header>
+        <div class="a_box">
+            <a href="./index.html">Обо мне</a>
+            <div class="a_box_line"></div>
+        </div>
+        <div class="a_box">
+            <a href="./projects/projects.html">Проекты</a>
+            <div class="a_box_line"></div>
+        </div>
+        <div class="a_box">
+            <a href="./contacts/contacts.html">Контакты</a>
+            <div class="a_box_line"></div>
+        </div>
+        <div class="a_box">
+            <a href="./video_original.html">Видео</a>
+            <div class="a_box_line"></div>
+        </div>
+        <div class="a_box">
+            <a href="./word_original.html">Документы</a>
+            <div class="a_box_line"></div>
+        </div>
+    </header>
 
-<div class="container">
+    <div class="doc-section">
+        <div class="doc-title">Документы DOC/DOCX и PDF</div>
+        <div class="doc-grid" id="docGrid">
 EOF
 
-# === ДОБАВЛЕНИЕ DOC/DOCX ===
+# === ДОБАВЛЕНИЕ КАРТОЧЕК ДОКУМЕНТОВ ===
 for doc in "$IN_DIR"/*; do
-
     [ -f "$doc" ] || continue
-
+    
     filename=$(basename "$doc")
-
     filesize=$(stat -c%s "$doc")
     size_kb=$(awk "BEGIN {printf \"%.2f\", $filesize/1024}")
-
     pdf_name="${filename%.*}.pdf"
-
-cat >> "$BASE_DIR/word_original.html" << EOF
-
-<div class="card">
-
-    <h3>$filename</h3>
-
-    <p>Size: ${size_kb} KB</p>
-
-    <a href="files_doc_in/$filename" download>
-        Download DOC
-    </a>
-
-    <br>
-
-    <a class="pdf-btn"
-       href="files_pdf_out/$pdf_name"
-       target="_blank">
-       Open PDF
-    </a>
-
-</div>
-
+    
+    # Генерируем уникальный ID для PDF элемента
+    pdf_id=$(echo "$filename" | sha256sum | cut -c1-8)
+    
+    cat >> "$BASE_DIR/word_original.html" << EOF
+            <div class="doc-card" data-doc="$filename">
+                <iframe class="pdf-viewer" id="pdf-$pdf_id" src="files_pdf_out/$pdf_name" frameborder="0"></iframe>
+                <h3>$filename</h3>
+                <p>📄 Размер: ${size_kb} KB</p>
+                <div class="badge-doc">📝 DOC/DOCX → PDF</div>
+                <div class="button-group">
+                    <a href="files_doc_in/$filename" download class="btn btn-download">📥 Скачать DOC</a>
+                    <a href="files_pdf_out/$pdf_name" target="_blank" class="btn btn-pdf">📖 Открыть PDF</a>
+                    <button class="btn btn-fullscreen" onclick="fullscreenPdf('pdf-$pdf_id')">🖥️ Во весь экран</button>
+                </div>
+            </div>
 EOF
-
 done
 
-# === ЗАКРЫТИЕ HTML ===
 cat >> "$BASE_DIR/word_original.html" << 'EOF'
+        </div>
+    </div>
 
-</div>
-
+    <script src="main.js"></script>
+    <script src="stars.js"></script>
+    <script>
+        // Функция для полноэкранного режима PDF
+        function fullscreenPdf(elementId) {
+            const iframe = document.getElementById(elementId);
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.webkitRequestFullscreen) {
+                iframe.webkitRequestFullscreen();
+            } else if (iframe.msRequestFullscreen) {
+                iframe.msRequestFullscreen();
+            }
+        }
+        
+        // Добавляем стили для полноэкранного режима
+        const style = document.createElement('style');
+        style.textContent = `
+            :-webkit-full-screen {
+                width: 100%;
+                height: 100%;
+            }
+            :fullscreen {
+                width: 100%;
+                height: 100%;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        console.log('PDF просмотрщик загружен. Документов: ' + document.querySelectorAll('.doc-card').length);
+    </script>
 </body>
 </html>
-
 EOF
 
 # === ПРАВА ДОСТУПА ===
 sudo chown -R www-data:www-data "$BASE_DIR"
-
 sudo chmod -R 755 "$BASE_DIR"
 
 # === ЗАВЕРШЕНИЕ ===

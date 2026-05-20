@@ -1,11 +1,6 @@
 #!/bin/bash
 
-# ============================================
-# WORD DOC/DOCX -> PDF + WEBSITE VIEWER
-# ============================================
-
 # ========= ПЕРЕМЕННЫЕ =========
-
 SRC_DIR="/var/www/portfolio/doc_source"
 IN_DIR="/var/www/portfolio/doc_in"
 PDF_DIR="/var/www/portfolio/pdf"
@@ -17,18 +12,13 @@ LOG_FILE="/var/www/portfolio/process_doc.log"
 
 SERVER_IP=$(hostname -I | awk '{print $1}')
 
-# ============================================
 # ЛОГ
-# ============================================
-
 echo "=== DOC PROCESSING LOG ===" > "$LOG_FILE"
 echo "Date: $(date)" >> "$LOG_FILE"
 echo "" >> "$LOG_FILE"
 
-# ============================================
-# СОЗДАНИЕ ПАПОК
-# ============================================
 
+# СОЗДАНИЕ ПАПОК
 echo "Creating directories..."
 
 sudo mkdir -p "$SRC_DIR"
@@ -36,10 +26,8 @@ sudo mkdir -p "$IN_DIR"
 sudo mkdir -p "$PDF_DIR"
 sudo mkdir -p "$ARCH_DIR"
 
-# ============================================
-# УСТАНОВКА ПРОГРАММ
-# ============================================
 
+# УСТАНОВКА ПРОГРАММ
 echo "Installing programs..."
 
 sudo apt update
@@ -55,10 +43,7 @@ sudo apt install -y \
 sudo systemctl enable apache2
 sudo systemctl start apache2
 
-# ============================================
 # КОПИРОВАНИЕ DOC
-# ============================================
-
 echo "Copying DOC files..."
 
 FOUND_DOC=0
@@ -85,10 +70,8 @@ if [ $FOUND_DOC -eq 0 ]; then
 
 fi
 
-# ============================================
-# КОНВЕРТАЦИЯ DOC -> PDF
-# ============================================
 
+# КОНВЕРТАЦИЯ DOC -> PDF
 echo "Converting DOC files to PDF..."
 
 for doc in "$IN_DIR"/*.doc "$IN_DIR"/*.docx; do
@@ -109,10 +92,8 @@ for doc in "$IN_DIR"/*.doc "$IN_DIR"/*.docx; do
 
 done
 
-# ============================================
-# АРХИВАЦИЯ TAR.BZ2
-# ============================================
 
+# АРХИВАЦИЯ TAR.BZ2
 echo "Creating TAR.BZ2 archive..."
 
 ARCHIVE_NAME="files_doc_out_$(date +%Y%m%d_%H%M%S).tar.bz2"
@@ -121,10 +102,8 @@ sudo tar -cjf \
     "$ARCH_DIR/$ARCHIVE_NAME" \
     -C "$IN_DIR" .
 
-# ============================================
-# ZIP АРХИВ
-# ============================================
 
+# ZIP АРХИВ
 echo "Creating ZIP archive..."
 
 ZIP_NAME="word_project_$(date +%Y%m%d_%H%M%S).zip"
@@ -137,10 +116,8 @@ zip -r "$ZIP_NAME" \
     *.html \
     process_doc.log
 
-# ============================================
-# WORD ORIGINAL PAGE
-# ============================================
 
+# WORD ORIGINAL PAGE
 cat > "$BASE_DIR/word_original.html" << EOF
 <!DOCTYPE html>
 <html lang="ru">
@@ -440,9 +417,8 @@ function openDoc(url) {
 
 EOF
 
-# ============================================
+
 # WORD PROCESSED PAGE
-# ============================================
 
 cat > "$BASE_DIR/word_processed.html" << EOF
 <!DOCTYPE html>
@@ -743,17 +719,13 @@ function openPDF(url) {
 
 EOF
 
-# ============================================
-# ПРАВА
-# ============================================
 
+# ПРАВА
 sudo chown -R www-data:www-data "$BASE_DIR"
 sudo chmod -R 755 "$BASE_DIR"
 
-# ============================================
-# ГОТОВО
-# ============================================
 
+# ГОТОВО
 echo ""
 echo "===================================="
 echo "DONE!"

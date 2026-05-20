@@ -33,6 +33,39 @@ header a {
     transform: scaleX(1);
 }
 
+.dropbox {
+    position: relative;
+    /* overflow: hidden; - убираем или меняем на visible */
+    overflow: visible;
+}
+
+.dropbox_box {
+    background-color: #0d0d0dc4;
+    border-radius: 12px;
+
+    opacity: 0;
+    position: absolute;
+    user-select: none;
+    height: 0;
+    overflow: hidden;
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+    /* Плавное появление */
+    transition: opacity 0.3s ease, height 0.3s ease;
+    
+    /* Чтобы блок не перекрывал другие элементы */
+    z-index: 10;
+}
+
+.dropbox:hover .dropbox_box {
+    opacity: 1;
+    user-select: text;      /* или 'auto' вместо 'all' */
+    height: 400px;
+}
+
 
 .contacts-box {
     display: flex;

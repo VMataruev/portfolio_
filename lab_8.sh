@@ -1,27 +1,32 @@
 #!/bin/bash
 
 # ============================================
-# DOC -> PDF CONVERTER + WEB VIEWER
+# WORD DOC/DOCX -> PDF + WEBSITE VIEWER
 # ============================================
 
-# === ПЕРЕМЕННЫЕ ===
+# ========= ПЕРЕМЕННЫЕ =========
+
 SRC_DIR="/var/www/portfolio/doc_source"
 IN_DIR="/var/www/portfolio/doc_in"
 PDF_DIR="/var/www/portfolio/pdf"
 ARCH_DIR="/var/www/portfolio/arhiv/files_doc_out"
+
 BASE_DIR="/var/www/portfolio"
+
 LOG_FILE="/var/www/portfolio/process_doc.log"
 
+SERVER_IP=$(hostname -I | awk '{print $1}')
+
 # ============================================
-# ОЧИСТКА ЛОГА
+# ЛОГ
 # ============================================
 
-echo "=== DOC TO PDF PROCESSING LOG ===" > "$LOG_FILE"
+echo "=== DOC PROCESSING LOG ===" > "$LOG_FILE"
 echo "Date: $(date)" >> "$LOG_FILE"
 echo "" >> "$LOG_FILE"
 
 # ============================================
-# СОЗДАНИЕ КАТАЛОГОВ
+# СОЗДАНИЕ ПАПОК
 # ============================================
 
 echo "Creating directories..."
@@ -41,7 +46,7 @@ sudo apt update
 
 sudo apt install -y \
     libreoffice \
-    unoconv \
+    libreoffice-writer \
     apache2 \
     tar \
     bzip2 \
@@ -51,30 +56,33 @@ sudo systemctl enable apache2
 sudo systemctl start apache2
 
 # ============================================
-# КОПИРОВАНИЕ DOC ФАЙЛОВ
+# КОПИРОВАНИЕ DOC
 # ============================================
 
 echo "Copying DOC files..."
 
-if [ ! -d "$SRC_DIR" ]; then
-    mkdir -p "$SRC_DIR"
-    echo "Put DOC files into $SRC_DIR" | tee -a "$LOG_FILE"
-    exit 1
-fi
-
 FOUND_DOC=0
 
 for doc in "$SRC_DIR"/*.doc "$SRC_DIR"/*.docx; do
+
     if [ -f "$doc" ]; then
+
         FOUND_DOC=1
+
         sudo cp "$doc" "$IN_DIR/"
+
         echo "Copied: $(basename "$doc")" >> "$LOG_FILE"
+
     fi
+
 done
 
 if [ $FOUND_DOC -eq 0 ]; then
+
     echo "No DOC/DOCX files found in $SRC_DIR"
+
     exit 1
+
 fi
 
 # ============================================
@@ -102,10 +110,10 @@ for doc in "$IN_DIR"/*.doc "$IN_DIR"/*.docx; do
 done
 
 # ============================================
-# АРХИВАЦИЯ DOC ФАЙЛОВ
+# АРХИВАЦИЯ TAR.BZ2
 # ============================================
 
-echo "Creating archive..."
+echo "Creating TAR.BZ2 archive..."
 
 ARCHIVE_NAME="files_doc_out_$(date +%Y%m%d_%H%M%S).tar.bz2"
 
@@ -113,13 +121,13 @@ sudo tar -cjf \
     "$ARCH_DIR/$ARCHIVE_NAME" \
     -C "$IN_DIR" .
 
-echo "Archive created: $ARCHIVE_NAME" >> "$LOG_FILE"
-
 # ============================================
-# СОЗДАНИЕ ZIP АРХИВА
+# ZIP АРХИВ
 # ============================================
 
-ZIP_NAME="doc_reports_$(date +%Y%m%d_%H%M%S).zip"
+echo "Creating ZIP archive..."
+
+ZIP_NAME="word_project_$(date +%Y%m%d_%H%M%S).zip"
 
 cd "$BASE_DIR"
 
@@ -129,19 +137,19 @@ zip -r "$ZIP_NAME" \
     *.html \
     process_doc.log
 
-echo "ZIP created: $ZIP_NAME" >> "$LOG_FILE"
-
 # ============================================
-# СОЗДАНИЕ СТРАНИЦЫ DOC
+# WORD ORIGINAL PAGE
 # ============================================
 
-cat > "$BASE_DIR/word_original.html" << 'EOF'
+cat > "$BASE_DIR/word_original.html" << EOF
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOC Документы</title>
+
+    <title>WORD | Оригиналы</title>
 
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="main.css">
@@ -152,70 +160,144 @@ cat > "$BASE_DIR/word_original.html" << 'EOF'
             overflow: hidden;
         }
 
-        .layout {
+        .documents_layout {
             display: flex;
-            margin-top: 90px;
-            height: calc(100vh - 90px);
+            width: 100%;
+            height: 100svh;
+            padding-top: 140px;
+            color: var(--text-main);
         }
 
         .sidebar {
-            width: 320px;
-            background: rgba(255,255,255,0.05);
-            border-right: 1px solid rgba(255,255,255,0.1);
+
+            width: 350px;
+            min-width: 350px;
+
+            height: calc(100svh - 140px);
+
+            background: rgba(255,255,255,0.03);
+
+            backdrop-filter: blur(20px);
+
+            border-right: 1px solid rgba(255,255,255,0.08);
+
             overflow-y: auto;
-            padding: 20px;
+
+            padding: 30px;
         }
 
-        .sidebar h2 {
+        .sidebar_title {
+
             color: var(--brand-main);
+
+            font-size: 32px;
+
+            margin-bottom: 30px;
+        }
+
+        .doc_card {
+
+            background: rgba(255,255,255,0.04);
+
+            border: 1px solid rgba(255,255,255,0.06);
+
+            border-radius: 15px;
+
+            padding: 18px;
+
             margin-bottom: 20px;
-        }
 
-        .doc-item {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
             cursor: pointer;
-            transition: 0.3s;
+
+            transition: .4s;
         }
 
-        .doc-item:hover {
-            background: rgba(255,255,255,0.12);
-            transform: translateX(5px);
+        .doc_card:hover {
+
+            transform: translateX(8px);
+
+            background: rgba(255,255,255,0.08);
         }
 
-        .doc-item h3 {
+        .doc_card h3 {
+
             color: var(--brand-main);
-            font-size: 15px;
+
+            font-size: 18px;
+
+            margin-bottom: 10px;
+
             word-break: break-all;
-            margin-bottom: 8px;
         }
 
-        .doc-item p {
+        .doc_card p {
+
             color: var(--text-gray);
-            font-size: 13px;
+
+            margin-bottom: 15px;
+        }
+
+        .download_btn {
+
+            border: 1px solid var(--brand-main);
+
+            display: inline-flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            padding: 8px 16px;
+
+            border-radius: 5px 5px 15px 5px;
+
+            color: var(--text-gray);
+
+            text-decoration: none;
+
+            transition: .4s;
+        }
+
+        .download_btn:hover {
+
+            background-color: var(--brand-main);
+
+            color: black;
         }
 
         .viewer {
+
             flex: 1;
-            background: rgba(255,255,255,0.03);
+
+            height: calc(100svh - 140px);
+
+            padding: 20px;
         }
 
-        iframe {
+        .viewer iframe {
+
             width: 100%;
+
             height: 100%;
+
             border: none;
+
+            border-radius: 20px;
+
             background: white;
         }
 
     </style>
+
 </head>
+
 <body>
 
 <div class="hero-bg">
     <div class="stars"></div>
 </div>
+
+<div class="wrapper_main">
 
 <header>
 
@@ -234,23 +316,55 @@ cat > "$BASE_DIR/word_original.html" << 'EOF'
         <div class="a_box_line"></div>
     </div>
 
-    <div class="a_box">
-        <a href="./word_original.html">DOC</a>
-        <div class="a_box_line"></div>
-    </div>
+    <div class="dropbox">
 
-    <div class="a_box">
-        <a href="./word_processed.html">PDF</a>
-        <div class="a_box_line"></div>
+        <div class="dropbox_title">Больше</div>
+
+        <div class="dropbox_box">
+
+            <div class="a_box">
+                <a href="./foto_original.html">ФОТО | Оригиналы</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./foto_processed.html">ФОТО | Обработанные</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./video_original.html">ВИДЕО | Оригиналы</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./video_processed.html">ВИДЕО | Обработанные</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./word_original.html">WORD | Оригиналы</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./word_processed.html">WORD | Обработанные</a>
+                <div class="a_box_line"></div>
+            </div>
+
+        </div>
+
     </div>
 
 </header>
 
-<div class="layout">
+<div class="documents_layout">
 
-    <div class="sidebar">
+<div class="sidebar">
 
-        <h2>DOC Файлы</h2>
+<div class="sidebar_title">
+DOC / DOCX
+</div>
 
 EOF
 
@@ -271,18 +385,22 @@ for doc in "$IN_DIR"/*.doc "$IN_DIR"/*.docx; do
 
 cat >> "$BASE_DIR/word_original.html" << EOF
 
-        <div class="doc-item"
-             onclick="openDoc('https://view.officeapps.live.com/op/embed.aspx?src=http://$(hostname -I | awk '{print $1}')/doc_in/$filename')">
+<div class="doc_card"
+onclick="openDoc('https://view.officeapps.live.com/op/embed.aspx?src=http://$SERVER_IP/doc_in/$filename')">
 
-            <h3>$filename</h3>
-            <p>${size_mb} MB</p>
+    <h3>$filename</h3>
 
-            <a href="./doc_in/$filename" download
-               style="color: #4ecdc4;">
-               Скачать DOC
-            </a>
+    <p>${size_mb} MB</p>
 
-        </div>
+    <a class="download_btn"
+       href="./doc_in/$filename"
+       download>
+
+       Скачать DOC
+
+    </a>
+
+</div>
 
 EOF
 
@@ -290,22 +408,26 @@ done
 
 cat >> "$BASE_DIR/word_original.html" << EOF
 
-    </div>
+</div>
 
-    <div class="viewer">
+<div class="viewer">
 
-        <iframe id="viewerFrame"
-            src="https://view.officeapps.live.com/op/embed.aspx?src=http://$(hostname -I | awk '{print $1}')/doc_in/$FIRST_DOC">
-        </iframe>
+<iframe id="viewerFrame"
+src="https://view.officeapps.live.com/op/embed.aspx?src=http://$SERVER_IP/doc_in/$FIRST_DOC">
+</iframe>
 
-    </div>
+</div>
+
+</div>
 
 </div>
 
 <script>
 
 function openDoc(url) {
+
     document.getElementById("viewerFrame").src = url;
+
 }
 
 </script>
@@ -319,16 +441,18 @@ function openDoc(url) {
 EOF
 
 # ============================================
-# СОЗДАНИЕ СТРАНИЦЫ PDF
+# WORD PROCESSED PAGE
 # ============================================
 
-cat > "$BASE_DIR/word_processed.html" << 'EOF'
+cat > "$BASE_DIR/word_processed.html" << EOF
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Документы</title>
+
+    <title>WORD | PDF</title>
 
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="main.css">
@@ -339,70 +463,144 @@ cat > "$BASE_DIR/word_processed.html" << 'EOF'
             overflow: hidden;
         }
 
-        .layout {
+        .documents_layout {
             display: flex;
-            margin-top: 90px;
-            height: calc(100vh - 90px);
+            width: 100%;
+            height: 100svh;
+            padding-top: 140px;
+            color: var(--text-main);
         }
 
         .sidebar {
-            width: 320px;
-            background: rgba(255,255,255,0.05);
-            border-right: 1px solid rgba(255,255,255,0.1);
+
+            width: 350px;
+            min-width: 350px;
+
+            height: calc(100svh - 140px);
+
+            background: rgba(255,255,255,0.03);
+
+            backdrop-filter: blur(20px);
+
+            border-right: 1px solid rgba(255,255,255,0.08);
+
             overflow-y: auto;
-            padding: 20px;
+
+            padding: 30px;
         }
 
-        .sidebar h2 {
+        .sidebar_title {
+
             color: var(--brand-main);
+
+            font-size: 32px;
+
+            margin-bottom: 30px;
+        }
+
+        .doc_card {
+
+            background: rgba(255,255,255,0.04);
+
+            border: 1px solid rgba(255,255,255,0.06);
+
+            border-radius: 15px;
+
+            padding: 18px;
+
             margin-bottom: 20px;
-        }
 
-        .pdf-item {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
             cursor: pointer;
-            transition: 0.3s;
+
+            transition: .4s;
         }
 
-        .pdf-item:hover {
-            background: rgba(255,255,255,0.12);
-            transform: translateX(5px);
+        .doc_card:hover {
+
+            transform: translateX(8px);
+
+            background: rgba(255,255,255,0.08);
         }
 
-        .pdf-item h3 {
+        .doc_card h3 {
+
             color: var(--brand-main);
-            font-size: 15px;
+
+            font-size: 18px;
+
+            margin-bottom: 10px;
+
             word-break: break-all;
-            margin-bottom: 8px;
         }
 
-        .pdf-item p {
+        .doc_card p {
+
             color: var(--text-gray);
-            font-size: 13px;
+
+            margin-bottom: 15px;
+        }
+
+        .download_btn {
+
+            border: 1px solid var(--brand-main);
+
+            display: inline-flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            padding: 8px 16px;
+
+            border-radius: 5px 5px 15px 5px;
+
+            color: var(--text-gray);
+
+            text-decoration: none;
+
+            transition: .4s;
+        }
+
+        .download_btn:hover {
+
+            background-color: var(--brand-main);
+
+            color: black;
         }
 
         .viewer {
+
             flex: 1;
-            background: rgba(255,255,255,0.03);
+
+            height: calc(100svh - 140px);
+
+            padding: 20px;
         }
 
-        iframe {
+        .viewer iframe {
+
             width: 100%;
+
             height: 100%;
+
             border: none;
+
+            border-radius: 20px;
+
             background: white;
         }
 
     </style>
+
 </head>
+
 <body>
 
 <div class="hero-bg">
     <div class="stars"></div>
 </div>
+
+<div class="wrapper_main">
 
 <header>
 
@@ -421,23 +619,55 @@ cat > "$BASE_DIR/word_processed.html" << 'EOF'
         <div class="a_box_line"></div>
     </div>
 
-    <div class="a_box">
-        <a href="./word_original.html">DOC</a>
-        <div class="a_box_line"></div>
-    </div>
+    <div class="dropbox">
 
-    <div class="a_box">
-        <a href="./word_processed.html">PDF</a>
-        <div class="a_box_line"></div>
+        <div class="dropbox_title">Больше</div>
+
+        <div class="dropbox_box">
+
+            <div class="a_box">
+                <a href="./foto_original.html">ФОТО | Оригиналы</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./foto_processed.html">ФОТО | Обработанные</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./video_original.html">ВИДЕО | Оригиналы</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./video_processed.html">ВИДЕО | Обработанные</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./word_original.html">WORD | Оригиналы</a>
+                <div class="a_box_line"></div>
+            </div>
+
+            <div class="a_box">
+                <a href="./word_processed.html">WORD | Обработанные</a>
+                <div class="a_box_line"></div>
+            </div>
+
+        </div>
+
     </div>
 
 </header>
 
-<div class="layout">
+<div class="documents_layout">
 
-    <div class="sidebar">
+<div class="sidebar">
 
-        <h2>PDF Файлы</h2>
+<div class="sidebar_title">
+PDF DOCUMENTS
+</div>
 
 EOF
 
@@ -458,18 +688,22 @@ for pdf in "$PDF_DIR"/*.pdf; do
 
 cat >> "$BASE_DIR/word_processed.html" << EOF
 
-        <div class="pdf-item"
-             onclick="openPDF('./pdf/$filename')">
+<div class="doc_card"
+onclick="openPDF('./pdf/$filename')">
 
-            <h3>$filename</h3>
-            <p>${size_mb} MB</p>
+    <h3>$filename</h3>
 
-            <a href="./pdf/$filename" download
-               style="color: #ff6b6b;">
-               Скачать PDF
-            </a>
+    <p>${size_mb} MB</p>
 
-        </div>
+    <a class="download_btn"
+       href="./pdf/$filename"
+       download>
+
+       Скачать PDF
+
+    </a>
+
+</div>
 
 EOF
 
@@ -477,22 +711,26 @@ done
 
 cat >> "$BASE_DIR/word_processed.html" << EOF
 
-    </div>
+</div>
 
-    <div class="viewer">
+<div class="viewer">
 
-        <iframe id="pdfFrame"
-            src="./pdf/$FIRST_PDF">
-        </iframe>
+<iframe id="pdfFrame"
+src="./pdf/$FIRST_PDF">
+</iframe>
 
-    </div>
+</div>
+
+</div>
 
 </div>
 
 <script>
 
 function openPDF(url) {
+
     document.getElementById("pdfFrame").src = url;
+
 }
 
 </script>
@@ -513,24 +751,24 @@ sudo chown -R www-data:www-data "$BASE_DIR"
 sudo chmod -R 755 "$BASE_DIR"
 
 # ============================================
-# ЗАВЕРШЕНИЕ
+# ГОТОВО
 # ============================================
 
 echo ""
-echo "============================================"
+echo "===================================="
 echo "DONE!"
-echo "============================================"
-echo ""
-
-echo "Website:"
-echo "http://$(hostname -I | awk '{print $1}')/word_original.html"
+echo "===================================="
 
 echo ""
-echo "PDF page:"
-echo "http://$(hostname -I | awk '{print $1}')/word_processed.html"
+echo "WORD ORIGINAL:"
+echo "http://$SERVER_IP/word_original.html"
 
 echo ""
-echo "Archive:"
+echo "WORD PDF:"
+echo "http://$SERVER_IP/word_processed.html"
+
+echo ""
+echo "ARCHIVE:"
 echo "$ARCH_DIR/$ARCHIVE_NAME"
 
 echo ""
@@ -538,5 +776,5 @@ echo "ZIP:"
 echo "$BASE_DIR/$ZIP_NAME"
 
 echo ""
-echo "Log file:"
+echo "LOG:"
 echo "$LOG_FILE"
